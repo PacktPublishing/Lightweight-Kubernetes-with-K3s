@@ -1,0 +1,49 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+  config.vm.box = "bento/ubuntu-18.04"
+  config.vm.define "master" do |k3s|
+      k3s.vm.hostname = "k3s-master"
+      k3s.vm.network "private_network", ip: "192.168.33.11"
+      config.vm.network "forwarded_port", guest: 6443, host: 6443, host_ip: "0.0.0.0"
+      k3s.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+        vb.name = "k3s-master"
+      end
+      
+      k3s.vm.provision "shell", inline: <<-SHELL
+        curl -sfL https://get.k3s.io | sh -
+        NODE_TOKEN="/var/lib/rancher/k3s/server/node-token"
+        while [ ! -e ${NODE_TOKEN} ]
+        do
+            echo "Waiting for node token..."
+            sleep 1
+        done
+        echo "Node token ready!"
+        cat ${NODE_TOKEN}
+        cp ${NODE_TOKEN} /vagrant/
+      SHELL
+  end
+
+  config.vm.define "node-1" do |k3s|
+      k3s.vm.hostname = "k3s-node-1"
+      k3s.vm.network "private_network", ip: "192.168.33.12"
+      k3s.vm.provider "virtualbox" do |vb|
+        vb.memory = "1024"
+        vb.name = "k3s-node-1"
+      end
+
+      k3s.vm.provision "shell", inline: <<-SHELL
+        curl -sfL https://get.k3s.io | sh -
+        systemctl stop k3s
+        sed -i -e "s#k3s server#k3s agent --server https://192.168.33.11:6443 --token $(cat /vagrant/node-token)#g" /etc/systemd/system/k3s.service
+        systemctl daemon-reload
+        systemctl start k3s
+      SHELL
+  end
+end
