@@ -1,3 +1,8 @@
+## $5 Tech Unlocked 2021!
+[Buy and download this Video for only $5 on PacktPub.com](https://www.packtpub.com/product/lightweight-kubernetes-with-k3s-video/9781838821173)
+-----
+*The $5 campaign         runs from __December 15th 2020__ to __January 13th 2021.__*
+
 # Lightweight-Kubernetes-with-K3s
 
 This is the code repository for [Lightweight Kubernetes with K3s [Video]](https://www.packtpub.com/), published by [Packt](https://www.packtpub.com/?utm_source=github). It contains all the supporting project files necessary to work through the video course from start to finish.
